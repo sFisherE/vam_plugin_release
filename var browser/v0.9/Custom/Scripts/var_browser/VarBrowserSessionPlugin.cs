@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using SimpleJSON;
 using UnityEngine.UI;
 
-namespace MVRPlugin {
-	public class TemplateWithSamples : MVRScript {
+namespace VarBrowser {
+	public class VarBrowserSessionPlugin : MVRScript {
 
 		// IMPORTANT - DO NOT make custom enums. The dynamic C# complier crashes Unity when it encounters these for
 		// some reason
