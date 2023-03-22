@@ -189,7 +189,17 @@ namespace var_browser
                 }
             }
         }
-
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MeshVR.PresetManager), "LoadPresetFromJSON",
+            new Type[] { typeof(JSONClass), typeof(bool) })]
+        public static void PreLoadPresetFromJSON(MeshVR.PresetManager __instance,
+            JSONClass inputJSON,
+            bool isMerge = false)
+        {
+            string str = inputJSON.ToString();
+            LogUtil.LogWarning("PresetManager PreLoadPresetFromJSON");
+            FileButton.EnsureInstalledInternal(str);
+        }
         //[HarmonyPrefix]
         //[HarmonyPatch(typeof(MeshVR.PresetManager), "LoadPresetPreFromJSON", 
         //    new Type[] {typeof(JSONClass), typeof(bool) })]
