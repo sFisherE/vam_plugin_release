@@ -1,6 +1,4 @@
-﻿//using com.ootii.Messages;
-using ICSharpCode.SharpZipLib.Core;
-//using MVR.FileManagementSecure;
+﻿using ICSharpCode.SharpZipLib.Core;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,9 +20,14 @@ namespace var_browser
 		public static FileManager singleton;
 
 		protected static Dictionary<string, VarPackage> packagesByUid;
+		public static Dictionary<string, VarPackage> PackagesByUid
+        {
+            get
+            {
+				return packagesByUid;
 
-
-		//protected static HashSet<VarPackage> enabledPackages;
+			}
+        }
 
 		protected static Dictionary<string, VarPackage> packagesByPath;
 
@@ -144,6 +147,7 @@ namespace var_browser
 			string text = packagePathToUid(vpath).Trim();
 			string[] array = text.Split('.');
 
+			bool isDuplicated = false;
 			if (array.Length == 3)
 			{
 				string text2 = array[0];
@@ -170,7 +174,6 @@ namespace var_browser
 						//var包disable，就是在同路径下新建一个disable的文件
 						if (varPackage.Enabled)
 						{
-							//enabledPackages.Add(varPackage);
 							if (varPackage.FileEntries != null)
 							{
 								foreach (VarFileEntry fileEntry in varPackage.FileEntries)
@@ -183,9 +186,8 @@ namespace var_browser
 						}
 						return varPackage;
 					}
+					isDuplicated = true;
 					LogUtil.LogError("Duplicate package uid " + text + ". Cannot register");
-
-
 				}
 				catch (Exception)
 				{
@@ -200,7 +202,12 @@ namespace var_browser
             //到这里说明不合法
             if (clean)
             {
-				RemoveToInvalid(vpath);
+                if (isDuplicated)
+                {
+					RemoveToInvalid(vpath, "Duplicated");
+				}
+				else
+					RemoveToInvalid(vpath,"InvalidName");
 			}
             return null;
         }
@@ -381,13 +388,6 @@ namespace var_browser
 							VarPackage value2;
 							if (packagesByPath.TryGetValue(varPath, out value2))
 							{
-								//bool enabled = enabledPackages.Contains(value2);
-								//bool enabled2 = value2.Enabled;
-								//if ((!enabled && enabled2) || (enabled && !enabled2) || value2.IsSimulated)
-								//{
-								//	UnregisterPackage(value2);
-								//	addSet.Add(varPath);
-								//}
 							}
 							else
 							{
@@ -466,16 +466,13 @@ namespace var_browser
 					//	UnityEngine.Profiling.Profiler.EndSample();
 					//}
 				}
-				if (init)
-				{
-					FileManager.singleton.StartScan(flag,clean, true);
-				}
-				else
-				{
-					FileManager.singleton.StartScan(flag,clean, false);
-                }
+                if (init)
+                    FileManager.singleton.StartScan(flag, clean, true);
+                else
+                    FileManager.singleton.StartScan(flag, clean, false);
+
             }
-			catch (Exception arg)
+            catch (Exception arg)
 			{
 				LogUtil.LogError("Exception during package refresh " + arg);
 			}
@@ -523,21 +520,22 @@ namespace var_browser
 					pathToVarFileEntry.Add(fileEntry.Path, fileEntry);
 			}
 		}
-
-		public void StartScan(bool flag,bool clean,bool runCo)
-		{
-            if (runCo)
-            {
+		Coroutine m_StartScanCo = null;
+		IEnumerator StartScanCo(bool flag, bool clean, bool runCo)
+        {
+			List<VarPackage> invalid = new List<VarPackage>();
+			if (runCo)
+			{
 				if (m_Co != null)
 				{
 					StopCoroutine(m_Co);
 					m_Co = null;
 				}
-				m_Co = StartCoroutine(ScanVarPackage(clean));
+				m_Co = StartCoroutine(ScanVarPackage(clean,invalid));
+				yield return m_Co;
 			}
             else
             {
-				List<VarPackage> invalid = new List<VarPackage>();
 
 				foreach (var item in packagesByUid)
 				{
@@ -547,25 +545,72 @@ namespace var_browser
 						invalid.Add(item.Value);
 					}
 				}
-                if (clean)
-                {
-					foreach (var item in invalid)
-					{
-						string path = item.Path;
-						UnregisterPackage(item);
-						RemoveToInvalid(path);
-					}
-				}
-				if (flag && onRefreshHandlers != null)
-				{
-					onRefreshHandlers();
-				}
-				//不管有没有变化都刷新一下，因为可能文件没有移动，只是favorite或者autoinstall状态变了
-				MessageKit.post(MessageDef.FileManagerRefresh);
+				
 			}
+			if (clean)
+			{
+				foreach (var item in invalid)
+				{
+					string path = item.Path;
+					UnregisterPackage(item);
+					RemoveToInvalid(path, "InvalidZip");
+				}
+			}
+			if (flag && onRefreshHandlers != null)
+			{
+				onRefreshHandlers();
+			}
+			//不管有没有变化都刷新一下，因为可能文件没有移动，只是favorite或者autoinstall状态变了
+			MessageKit.post(MessageDef.FileManagerRefresh);
+		}
+		public void StartScan(bool flag,bool clean,bool runCo)
+		{
+			if (m_StartScanCo != null)
+			{
+				StopCoroutine(m_StartScanCo);
+				m_StartScanCo = null;
+			}
+			m_StartScanCo = StartCoroutine(StartScanCo(flag, clean, runCo));
+   //         if (runCo)
+   //         {
+			//	if (m_Co != null)
+			//	{
+			//		StopCoroutine(m_Co);
+			//		m_Co = null;
+			//	}
+			//	m_Co = StartCoroutine(ScanVarPackage(clean));
+			//}
+   //         else
+   //         {
+			//	List<VarPackage> invalid = new List<VarPackage>();
+
+			//	foreach (var item in packagesByUid)
+			//	{
+			//		ScanAndRegister(item.Value);
+			//		if (item.Value.invalid)
+			//		{
+			//			invalid.Add(item.Value);
+			//		}
+			//	}
+   //             if (clean)
+   //             {
+			//		foreach (var item in invalid)
+			//		{
+			//			string path = item.Path;
+			//			UnregisterPackage(item);
+			//			RemoveToInvalid(path, "CorruptedZip");
+			//		}
+			//	}
+			//	if (flag && onRefreshHandlers != null)
+			//	{
+			//		onRefreshHandlers();
+			//	}
+			//	//不管有没有变化都刷新一下，因为可能文件没有移动，只是favorite或者autoinstall状态变了
+			//	MessageKit.post(MessageDef.FileManagerRefresh);
+			//}
 		}
 		Coroutine m_Co = null;
-		IEnumerator ScanVarPackage(bool clean)
+		IEnumerator ScanVarPackage(bool clean, List<VarPackage> invalid)
 		{
 			int cnt = 0;
 			int allCount = packagesByUid.Count;
@@ -575,30 +620,48 @@ namespace var_browser
 			{
 				list.Add(item.Key);
 			}
-			for(int i = 0; i < list.Count; i++)
+			int step = 20;
+            if (VarPackageMgr.singleton.existCache)
+            {
+				step = 100;
+            }
+			for (int i = 0; i < list.Count; i++)
             {
 				string uid = list[i];
                 if (packagesByUid.ContainsKey(uid))
                 {
 					var pkg = packagesByUid[uid];
-					if (cnt > 20)
+					if (cnt > step)
 					{
 						yield return null;
 						cnt = 0;
 					}
 					ScanAndRegister(pkg);
+					if (pkg.invalid)
+					{
+						invalid.Add(pkg);
+					}
 				}
 				idx++;
 				MessageKit<string>.post(MessageDef.UpdateLoading, idx + "/" + allCount);
 
 				cnt++;
 			}
+   //         if (clean)
+   //         {
+			//	foreach (var item in invalid)
+			//	{
+			//		string path = item.Path;
+			//		UnregisterPackage(item);
+			//		RemoveToInvalid(path, "CorruptedZip");
+			//	}
+			//}
 
-            if (onRefreshHandlers != null)
-            {
-                onRefreshHandlers();
-            }
-				MessageKit.post(MessageDef.FileManagerInit);
+   //         if (onRefreshHandlers != null)
+   //         {
+   //             onRefreshHandlers();
+   //         }
+			//	MessageKit.post(MessageDef.FileManagerInit);
 		}
 
 		public List<string> GetAllVars()

@@ -85,11 +85,11 @@ namespace var_browser
             }
             foreach (var item in TagFilter.ClothingUnknownTags)
             {
-                LogUtil.LogWarning("clothing other tag:" + item);
+                //LogUtil.LogWarning("clothing other tag:" + item);
             }
             foreach (var item in TagFilter.HairUnknownTags)
             {
-                LogUtil.LogWarning("hair other tag:" + item);
+                //LogUtil.LogWarning("hair other tag:" + item);
             }
         }
         HashSet<string> GetHairFilter()

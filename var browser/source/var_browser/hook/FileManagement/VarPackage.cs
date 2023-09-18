@@ -8,22 +8,23 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Runtime.InteropServices;
+using Valve.Newtonsoft.Json;
 
 namespace var_browser
 {
 	[System.Serializable]
 	public class SerializableVarPackage
 	{
-		public string[] FileEntryNames;
-		public string[] FileEntryLastWriteTimes;
-		public long[] FileEntrySizes;
-		public string[] RecursivePackageDependencies;
+		public List<string> FileEntryNames;
+		public List<string> FileEntryLastWriteTimes;
+		public List<long> FileEntrySizes;
+		public List<string> RecursivePackageDependencies;
 
 
-		public string[] ClothingFileEntryNames;
-		public string[] ClothingTags;
-		public string[] HairFileEntryNames;
-		public string[] HairTags;
+		public List<string> ClothingFileEntryNames;
+		public List<string> ClothingTags;
+		public List<string> HairFileEntryNames;
+		public List<string> HairTags;
 	}
 
 	public class VarPackage
@@ -36,24 +37,8 @@ namespace var_browser
 		}
 
 		protected bool _enabled;
-		//protected int packFileProgressCount;
-
-		//protected int packFileTotalCount;
-
-		//public bool packThreadAbort;
-
-		//public string packThreadError;
-
-		//protected Dictionary<string, bool> customOptions;
-
-		//public string[] Scripts;
-		//public string[] Morphs;
-		//public string[] AssetBundles;
-
 		public bool isNewestVersion;
-
 		public bool isNewestEnabledVersion;
-
 		protected string[] cacheFilePatterns = new string[2]
 		{
 			"*.vmi",
@@ -69,12 +54,7 @@ namespace var_browser
 			get;
 			protected set;
 		}
-		//public bool fixUid
-  //      {
-		//	get;
-		//	protected set;
-  //      }
-
+		public bool IsCorruptedArchive = false;
 		public bool Enabled
 		{
 			get
@@ -180,17 +160,12 @@ namespace var_browser
 			get;
 			protected set;
 		}
+		public string RelativePath;
 		public VarPackageGroup Group
 		{
 			get;
 			protected set;
 		}
-
-		//public string GroupName
-		//{
-		//	get;
-		//	protected set;
-		//}
 
 		public string Name
 		{
@@ -273,11 +248,11 @@ namespace var_browser
 		//是否确认过所有的missing
 		public bool MissingDependenciesChecked = false;
 		public bool Scaned = false;
-		public string[] RecursivePackageDependencies;
-		public string[] ClothingFileEntryNames;
-		public string[] ClothingTags;
-		public string[] HairFileEntryNames;
-		public string[] HairTags;
+		public List<string> RecursivePackageDependencies;
+		public List<string> ClothingFileEntryNames;
+		public List<string> ClothingTags;
+		public List<string> HairFileEntryNames;
+		public List<string> HairTags;
 		public bool HasMissingDependencies
 		{
 			get;
@@ -325,6 +300,14 @@ namespace var_browser
 		{
 			Uid = uid;//VAM_GS.Yinping_1_3.2 这种形式
 			Path = path.Replace('\\', '/');//AllPackages/ReignMocap.RM-ActiveMaleSex.1.var 这种形式
+
+			if (Path.StartsWith("AddonPackages/"))
+				RelativePath = this.Path.Substring("AddonPackages/".Length);
+			else if (Path.StartsWith("AllPackages/"))
+				RelativePath = this.Path.Substring("AllPackages/".Length);
+			else
+				LogUtil.LogError("wrong path:"+Path);
+
 			//Debug.Log("VarPackage " + Path+" "+ Uid+ " "+ name);
 			Name = name;
 			Group = group;
@@ -393,26 +376,6 @@ namespace var_browser
 			}
 			FileManager.MoveFile(text, Path);
 		}
-
-		//public List<string> GetCustomOptionNames()
-		//{
-		//	if (customOptions != null)
-		//	{
-		//		return customOptions.Keys.ToList();
-		//	}
-		//	return new List<string>();
-		//}
-
-		//public bool GetCustomOption(string optionName)
-		//{
-		//	bool value = false;
-		//	if (customOptions != null)
-		//	{
-		//		customOptions.TryGetValue(optionName, out value);
-		//	}
-		//	return value;
-		//}
-
 		public bool HasMatchingDirectories(string dir)
 		{
 			return false;
@@ -454,10 +417,6 @@ namespace var_browser
 		public void SyncJSONCache()
 		{
 		}
-
-
-
-		//HashSet<string> m_Scripts;
 		public void Scan()
 		{
 			if (Scaned) return;
@@ -479,17 +438,21 @@ namespace var_browser
 					string cacheJson = "Cache/AllPackagesJSON/" + this.Uid + ".json";
 					if (File.Exists(cacheJson))
 					{
-						string text = File.ReadAllText(cacheJson);
-						SerializableVarPackage vp = JsonUtility.FromJson<SerializableVarPackage>(text);
+						SerializableVarPackage vp = VarPackageMgr.singleton.TryGetCache(this.Uid);
+                        if (vp == null)
+                        {
+							string text = File.ReadAllText(cacheJson);
+							vp = JsonUtility.FromJson<SerializableVarPackage>(text);
+						}
 
-                        if (vp.FileEntryNames != null)
+						if (vp.FileEntryNames != null)
                         {
 							this.ClothingFileEntryNames = vp.ClothingFileEntryNames;
 							this.ClothingTags = vp.ClothingTags;
 							this.HairFileEntryNames = vp.HairFileEntryNames;
 							this.HairTags = vp.HairTags;
 
-							for (int i=0;i<vp.FileEntryNames.Length;i++)
+							for (int i=0;i<vp.FileEntryNames.Count;i++)
 							{
 								string item = vp.FileEntryNames[i];
 								VarFileEntry varFileEntry = new VarFileEntry(this, item, DateTime.Parse(vp.FileEntryLastWriteTimes[i]), vp.FileEntrySizes[i]);
@@ -645,10 +608,10 @@ namespace var_browser
 			}
 
             //初始化clothing tag
-            if (ClothingFileEntryNames != null && ClothingFileEntryNames.Length > 0)
+            if (ClothingFileEntryNames != null && ClothingFileEntryNames.Count > 0)
             {
 				Dictionary<string, string> tags = new Dictionary<string, string>();
-				for(int i = 0; i < ClothingFileEntryNames.Length; i++)
+				for(int i = 0; i < ClothingFileEntryNames.Count; i++)
                 {
 					tags.Add(ClothingFileEntryNames[i], ClothingTags[i]);
 				}
@@ -681,10 +644,10 @@ namespace var_browser
 				}
 			}
 
-			if (HairFileEntryNames != null && HairFileEntryNames.Length > 0)
+			if (HairFileEntryNames != null && HairFileEntryNames.Count > 0)
 			{
 				Dictionary<string, string> tags = new Dictionary<string, string>();
-				for (int i = 0; i < HairFileEntryNames.Length; i++)
+				for (int i = 0; i < HairFileEntryNames.Count; i++)
 				{
 					tags.Add(HairFileEntryNames[i], HairTags[i]);
 				}
@@ -819,7 +782,7 @@ namespace var_browser
 							GetDependenciesRecursive(asObject, depends);
 							HashSet<string> scripts = new HashSet<string>();
 
-							svp.RecursivePackageDependencies = depends.ToArray();
+							svp.RecursivePackageDependencies = depends.ToList();
 						}
 					}
 				}
@@ -838,19 +801,19 @@ namespace var_browser
 				list2.Add(item.LastWriteTime.ToString());
 				list3.Add(item.Size);
 			}
-			svp.FileEntryNames = list1.ToArray();
-			svp.FileEntryLastWriteTimes = list2.ToArray();
-			svp.FileEntrySizes = list3.ToArray();
-            if (clothingFileList != null && clothingFileList.Count > 0)
-                svp.ClothingFileEntryNames = clothingFileList.ToArray();
-            if (clothingTags != null && clothingTags.Count > 0)
-                svp.ClothingTags = clothingTags.ToArray();
-            if (hairFileList != null && hairFileList.Count > 0)
-                svp.HairFileEntryNames = hairFileList.ToArray();
-            if (hairTags != null && hairTags.Count > 0)
-                svp.HairTags = hairTags.ToArray();
+			svp.FileEntryNames = list1;//.ToArray();
+			svp.FileEntryLastWriteTimes = list2;//.ToArray();
+			svp.FileEntrySizes = list3;//.ToArray();
+			if (clothingFileList != null && clothingFileList.Count > 0)
+                svp.ClothingFileEntryNames = clothingFileList;//.ToArray();
+			if (clothingTags != null && clothingTags.Count > 0)
+                svp.ClothingTags = clothingTags;//.ToArray();
+			if (hairFileList != null && hairFileList.Count > 0)
+                svp.HairFileEntryNames = hairFileList;//.ToArray();
+			if (hairTags != null && hairTags.Count > 0)
+                svp.HairTags = hairTags;//.ToArray();
 
-            this.RecursivePackageDependencies = svp.RecursivePackageDependencies;
+			this.RecursivePackageDependencies = svp.RecursivePackageDependencies;
 			this.ClothingFileEntryNames = svp.ClothingFileEntryNames;
 			this.ClothingTags = svp.ClothingTags;
 			this.HairFileEntryNames = svp.HairFileEntryNames;

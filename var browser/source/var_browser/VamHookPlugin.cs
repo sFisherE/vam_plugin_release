@@ -14,7 +14,7 @@ using ICSharpCode.SharpZipLib.Zip;
 namespace var_browser
 {
     //插件描述特性 分别为 插件ID 插件名字 插件版本(必须为数字)
-    [BepInPlugin("vam_var_browser", "var_browser", "0.11")]
+    [BepInPlugin("vam_var_browser", "var_browser", "0.12")]
     public partial class VamHookPlugin : BaseUnityPlugin //继承BaseUnityPlugin
     {
         private KeyUtil UIKey;
@@ -195,12 +195,13 @@ namespace var_browser
                 {
                     m_FileManagerInited = true;
                     TryAutoInstall();
+                    VarPackageMgr.singleton.Refresh();
                 });
             }
 
             //CreateHubBrowse();
             //CreateFileBrowser();
-
+            VarPackageMgr.singleton.Init();
             FileManager.Refresh(true);
         }
         void CreateFileBrowser()
@@ -363,8 +364,9 @@ namespace var_browser
             }
 
             GUILayout.Label(string.Format("Show/Hide:{0}",UIKey.keyPattern));
+            GUILayout.Label(string.Format("{0}:{1}", m_FileManagerInited, m_UIInited));
 
-            if (m_FileManagerInited&&m_UIInited)
+            if (m_FileManagerInited && m_UIInited)
             {
                 if (m_FileBrowser != null && m_FileBrowser.window.activeSelf)
                     GUI.enabled = false;

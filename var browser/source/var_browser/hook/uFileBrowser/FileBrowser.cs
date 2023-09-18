@@ -1090,7 +1090,7 @@ namespace var_browser
 		}
 		public void Hide()
 		{
-			LogUtil.LogWarning("FileBrowser Hide");
+			//LogUtil.LogWarning("FileBrowser Hide");
 			if (window.activeSelf)
 			{
 				if (selected != null)
@@ -1670,7 +1670,7 @@ namespace var_browser
 				{
 					value = 1f;
 				}
-				LogUtil.Log("directoryScrollPositions " + SavedKey + " " + value);
+				//LogUtil.Log("directoryScrollPositions " + SavedKey + " " + value);
 			}
             if (browserPage != null)
             {
@@ -1822,7 +1822,7 @@ namespace var_browser
 
 		public void SelectButtonClicked()
 		{
-			LogUtil.Log("SelectButtonClicked");
+			//LogUtil.Log("SelectButtonClicked");
 			if (!selectOnClick && fileEntryField != null)
 			{
 				if (fileEntryField.text != string.Empty)
@@ -1943,7 +1943,7 @@ namespace var_browser
 			string stackTrace = new System.Diagnostics.StackTrace().ToString();
 			LogUtil.LogWarning("SyncDisplayed "+ stackTrace);
 #endif
-			LogUtil.LogWarning("SyncDisplayed");
+			//LogUtil.LogWarning("SyncDisplayed");
 
 			if (sortedFilesAndDirs == null)
 			{
@@ -2268,7 +2268,7 @@ namespace var_browser
 		
 		protected void UpdateFileListCacheThreadSafe()
 		{
-			LogUtil.Log("UpdateFileListCacheThreadSafe");
+			//LogUtil.Log("UpdateFileListCacheThreadSafe");
 			List<FileAndDirInfo> list = new List<FileAndDirInfo>();
 			if (useFlatten)
 			{
@@ -2528,7 +2528,7 @@ namespace var_browser
 					cacheDirty = true;
                 }
 			}
-				LogUtil.Log("cacheDirty:"+ cacheDirty);
+				//LogUtil.Log("cacheDirty:"+ cacheDirty);
 			if (cacheDirty)
 			{
 				int num = 0;
@@ -2999,7 +2999,7 @@ namespace var_browser
 		public UIDynamicPopup creatorPopup = null;
 		protected void SyncCreatorFilter(string s)
 		{
-			LogUtil.Log("SyncCreatorFilter "+s);
+			//LogUtil.Log("SyncCreatorFilter "+s);
 			_creatorFilter = s;
 			ResetDisplayedPage();
 		}

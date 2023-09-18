@@ -20,10 +20,13 @@ namespace var_browser
         public static void PreLoadAppearancePreset(Atom __instance, string saveName = "savefile")
         {
             LogUtil.Log("[var browser hook]PreLoadAppearancePreset " + saveName);
-            using (MVR.FileManagement.FileEntryStreamReader fileEntryStreamReader =MVR.FileManagement.FileManager.OpenStreamReader(saveName, true))
+            if (MVR.FileManagement.FileManager.FileExists(saveName))
             {
-                string aJSON = fileEntryStreamReader.ReadToEnd();
-                FileButton.EnsureInstalledInternal(aJSON);
+                using (MVR.FileManagement.FileEntryStreamReader fileEntryStreamReader = MVR.FileManagement.FileManager.OpenStreamReader(saveName, true))
+                {
+                    string aJSON = fileEntryStreamReader.ReadToEnd();
+                    FileButton.EnsureInstalledInternal(aJSON);
+                }
             }
         }
 
@@ -33,12 +36,14 @@ namespace var_browser
         public static void PreLoadPreset(Atom __instance, string saveName = "savefile")
         {
             LogUtil.Log("[var browser hook]PreLoadPreset " + saveName);
-            using (MVR.FileManagement.FileEntryStreamReader fileEntryStreamReader = MVR.FileManagement.FileManager.OpenStreamReader(saveName, true))
+            if (MVR.FileManagement.FileManager.FileExists(saveName))
             {
-                string aJSON = fileEntryStreamReader.ReadToEnd();
-                FileButton.EnsureInstalledInternal(aJSON);
+                using (MVR.FileManagement.FileEntryStreamReader fileEntryStreamReader = MVR.FileManagement.FileManager.OpenStreamReader(saveName, true))
+                {
+                    string aJSON = fileEntryStreamReader.ReadToEnd();
+                    FileButton.EnsureInstalledInternal(aJSON);
+                }
             }
-
         }
         //[HarmonyPrefix]
         //[HarmonyPatch(typeof(MeshVR.PresetManagerControl), "LoadPresetWithPath", new Type[] { typeof(string) })]
@@ -160,47 +165,55 @@ namespace var_browser
         //    Debug.Log("PreAtomStore ");
         //}
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(MeshVR.PresetManager), "LoadPresetPre",
-            new Type[] { typeof(bool) })]
-        public static void PreLoadPresetPre(MeshVR.PresetManager __instance,bool isMerge = false)
-        {
-            if (__instance.itemType != MeshVR.PresetManager.ItemType.None)
-            {
-                string storeFolderPath = __instance.GetStoreFolderPath(false);
-                string storeName = __instance.storeName;
-
-                var traverse = Traverse.Create(__instance);
-                var _presetName = traverse.Field("_presetName").GetValue<string>();
-                var presetPackagePath = traverse.Field("presetPackagePath").GetValue<string>();
-                var presetSubPath = traverse.Field("presetSubPath").GetValue<string>();
-                var presetSubName = traverse.Field("presetSubName").GetValue<string>();
-
-                if (storeFolderPath != null && storeFolderPath != string.Empty
-                    && storeName != null && storeName != string.Empty && _presetName != null && _presetName != string.Empty)
-                {
-                    string text = presetPackagePath + storeFolderPath + presetSubPath + storeName + "_" + presetSubName + ".vap";
-                    LogUtil.LogWarning("PresetManager PreLoadPresetPre " + text);
-                    using (MVR.FileManagement.FileEntryStreamReader fileEntryStreamReader = MVR.FileManagement.FileManager.OpenStreamReader(text, true))
-                    {
-                        string aJSON = fileEntryStreamReader.ReadToEnd();
-                        FileButton.EnsureInstalledInternal(aJSON);
-                    }
-                }
-            }
-        }
-
         //[HarmonyPrefix]
-        //[HarmonyPatch(typeof(MeshVR.PresetManager), "LoadPresetPreFromJSON", 
-        //    new Type[] {typeof(JSONClass), typeof(bool) })]
-        //protected void PreLoadPresetPreFromJSON(MeshVR.PresetManager __instance, 
-        //    JSONClass inputJSON, 
-        //    bool isMerge = false)
+        //[HarmonyPatch(typeof(MeshVR.PresetManager), "LoadPresetPre",
+        //    new Type[] { typeof(bool) })]
+        //public static void PreLoadPresetPre(MeshVR.PresetManager __instance,bool isMerge = false)
         //{
-        //    string str = inputJSON.ToString();
-        //    Debug.Log("PresetManager PreLoadPresetPreFromJSON " + __instance.presetName);
-        //    FileButton.EnsureInstalledInternal(str);
+        //    if (__instance.itemType != MeshVR.PresetManager.ItemType.None)
+        //    {
+        //        string storeFolderPath = __instance.GetStoreFolderPath(false);
+        //        string storeName = __instance.storeName;
+
+        //        var traverse = Traverse.Create(__instance);
+        //        var _presetName = traverse.Field("_presetName").GetValue<string>();
+        //        var presetPackagePath = traverse.Field("presetPackagePath").GetValue<string>();
+        //        var presetSubPath = traverse.Field("presetSubPath").GetValue<string>();
+        //        var presetSubName = traverse.Field("presetSubName").GetValue<string>();
+
+        //        if (storeFolderPath != null && storeFolderPath != string.Empty
+        //            && storeName != null && storeName != string.Empty && _presetName != null && _presetName != string.Empty)
+        //        {
+        //            string text = presetPackagePath + storeFolderPath + presetSubPath + storeName + "_" + presetSubName + ".vap";
+        //            LogUtil.LogWarning("PresetManager PreLoadPresetPre " + text);
+        //            if (MVR.FileManagement.FileManager.FileExists(text))
+        //            {
+        //                using (MVR.FileManagement.FileEntryStreamReader fileEntryStreamReader = MVR.FileManagement.FileManager.OpenStreamReader(text, true))
+        //                {
+        //                    string aJSON = fileEntryStreamReader.ReadToEnd();
+        //                    FileButton.EnsureInstalledInternal(aJSON);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                LogUtil.LogError("PresetManager PreLoadPresetPre " + text+" no exists");
+        //            }
+
+        //        }
+        //    }
         //}
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MeshVR.PresetManager), "LoadPresetPreFromJSON",
+            new Type[] { typeof(JSONClass), typeof(bool) })]
+        protected void PreLoadPresetPreFromJSON(MeshVR.PresetManager __instance,
+            JSONClass inputJSON,
+            bool isMerge = false)
+        {
+            string str = inputJSON.ToString();
+            Debug.Log("PresetManager PreLoadPresetPreFromJSON " + __instance.presetName);
+            FileButton.EnsureInstalledInternal(str);
+        }
 
         //[HarmonyPrefix]
         //[HarmonyPatch(typeof(MeshVR.PresetManager), "LoadPresetPre", new Type[] { typeof(bool) })]

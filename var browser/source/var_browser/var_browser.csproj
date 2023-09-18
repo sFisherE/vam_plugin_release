@@ -245,6 +245,10 @@
     <Reference Include="UnityEngine.XRModule">
       <HintPath>..\..\..\..\vam\VaM_Data\Managed\UnityEngine.XRModule.dll</HintPath>
     </Reference>
+    <Reference Include="Valve.Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\vam\VaM_Data\Managed\Valve.Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="ZFBrowser">
       <HintPath>..\..\..\..\vam\VaM_Data\Managed\ZFBrowser.dll</HintPath>
     </Reference>
@@ -252,6 +256,7 @@
   <ItemGroup>
     <Compile Include="GlobalInfo.cs" />
     <Compile Include="hook\AtomHook.cs" />
+    <Compile Include="hook\FileManagement\VarPackageMgr.cs" />
     <Compile Include="hook\HubResourcePackageHook.cs" />
     <Compile Include="hook\CustomImageLoaderThreaded.cs" />
     <Compile Include="hook\SuperControllerHook.cs" />

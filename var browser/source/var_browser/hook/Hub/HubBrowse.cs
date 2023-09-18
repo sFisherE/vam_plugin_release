@@ -1984,17 +1984,17 @@ namespace var_browser
                 updatesPanel = componentInChildren.updatesPanel;
                 updatesContainer = componentInChildren.updatesContainer;
             }
-            LogUtil.LogWarning("hubEnabledJSON RegisterNegativeIndicator");
+            //LogUtil.LogWarning("hubEnabledJSON RegisterNegativeIndicator");
             hubEnabledJSON.RegisterNegativeIndicator(componentInChildren.hubEnabledNegativeIndicator, isAlt);
-            LogUtil.LogWarning("enableHubAction RegisterButton");
+            //LogUtil.LogWarning("enableHubAction RegisterButton");
             enableHubAction.RegisterButton(componentInChildren.enableHubButton, isAlt);
-            LogUtil.LogWarning("webBrowserEnabledJSON.RegisterNegativeIndicator");
+            //LogUtil.LogWarning("webBrowserEnabledJSON.RegisterNegativeIndicator");
             webBrowserEnabledJSON.RegisterNegativeIndicator(componentInChildren.webBrowserEnabledNegativeIndicator, isAlt);
-            LogUtil.LogWarning("enableWebBrowserAction.RegisterButton");
+            //LogUtil.LogWarning("enableWebBrowserAction.RegisterButton");
             enableWebBrowserAction.RegisterButton(componentInChildren.enabledWebBrowserButton, isAlt);
-            LogUtil.LogWarning("cancelGetHubInfoAction.RegisterButton");
+            //LogUtil.LogWarning("cancelGetHubInfoAction.RegisterButton");
             cancelGetHubInfoAction.RegisterButton(componentInChildren.cancelGetHubInfoButton, isAlt);
-            LogUtil.LogWarning("retryGetHubInfoAction.RegisterButton");
+            //LogUtil.LogWarning("retryGetHubInfoAction.RegisterButton");
             retryGetHubInfoAction.RegisterButton(componentInChildren.retryGetHubInfoButton, isAlt);
             pageInfoJSON.RegisterText(componentInChildren.pageInfoText, isAlt);
             numResourcesJSON.RegisterText(componentInChildren.numResourcesText, isAlt);
@@ -2004,7 +2004,7 @@ namespace var_browser
             refreshResourcesAction.RegisterButton(componentInChildren.refreshButton, isAlt);
             clearFiltersAction.RegisterButton(componentInChildren.clearFiltersButton, isAlt);
 
-            LogUtil.LogWarning("hostedOptionPopup RegisterPopup");
+            //LogUtil.LogWarning("hostedOptionPopup RegisterPopup");
             try
             {
                 componentInChildren.hostedOptionPopup.useFiltering = false;
@@ -2013,13 +2013,13 @@ namespace var_browser
             }
             catch(Exception e)
             {
-                LogUtil.LogError("hostedOptionPopup " + e.ToString());
+                //LogUtil.LogError("hostedOptionPopup " + e.ToString());
             }
 
 
             searchFilterJSON.RegisterInputField(componentInChildren.searchInputField, isAlt);
 
-            LogUtil.LogWarning("payTypeFilterChooser RegisterPopup");
+            //LogUtil.LogWarning("payTypeFilterChooser RegisterPopup");
             try
             {
                 componentInChildren.payTypeFilterPopup.useFiltering = false;
@@ -2031,7 +2031,7 @@ namespace var_browser
                 LogUtil.LogError("payTypeFilterPopup " + e.ToString());
             }
 
-            LogUtil.LogWarning("categoryFilterChooser RegisterPopup");
+            //LogUtil.LogWarning("categoryFilterChooser RegisterPopup");
             try
             {
                 componentInChildren.categoryFilterPopup.useFiltering = false;
@@ -2042,7 +2042,7 @@ namespace var_browser
             {
                 LogUtil.LogError("categoryFilterPopup " + e.ToString());
             }
-            LogUtil.LogWarning("creatorFilterChooser RegisterPopup");
+            //LogUtil.LogWarning("creatorFilterChooser RegisterPopup");
             try
             {
                 componentInChildren.creatorFilterPopup.useFiltering = false;
@@ -2053,7 +2053,7 @@ namespace var_browser
             {
                 LogUtil.LogError("creatorFilterPopup " + e.ToString());
             }
-            LogUtil.LogWarning("tagsFilterChooser RegisterPopup");
+            //LogUtil.LogWarning("tagsFilterChooser RegisterPopup");
             try
             {
                 componentInChildren.tagsFilterPopup.useFiltering = false;
@@ -2065,7 +2065,7 @@ namespace var_browser
             {
                 LogUtil.LogError("tagsFilterPopup " + e.ToString());
             }
-            LogUtil.LogWarning("sortPrimaryChooser RegisterPopup");
+            //LogUtil.LogWarning("sortPrimaryChooser RegisterPopup");
             try
             {
                 componentInChildren.sortPrimaryPopup.useFiltering = false;
@@ -2076,7 +2076,7 @@ namespace var_browser
             {
                 LogUtil.LogError("sortPrimaryPopup " + e.ToString());
             }
-            LogUtil.LogWarning("sortSecondaryChooser RegisterPopup");
+            //LogUtil.LogWarning("sortSecondaryChooser RegisterPopup");
             try
             {
                 componentInChildren.sortSecondaryPopup.useFiltering = false;
